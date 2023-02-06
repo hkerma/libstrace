@@ -1,0 +1,27 @@
+# EXCLUDE_OBJS  := $(SOURCE_DIR)/strace-statfs64.o $(SOURCE_DIR)/strace-main.o $(SOURCE_DIR)/strace-ucopy.o
+BUILD_DIR               := build_lib
+SRC                             := src
+OBJS                    := $(wildcard $(SRC)/*.o)
+# NEW_OBJS              := $(filter-out $(EXCLUDE_OBJS),$(OBJECTS))
+NEW_OBJS                := $(OBJS)
+
+.PHONY: print_vars
+
+print_vars:
+        @echo $(NEW_OBJS)
+
+main: strace-main.o libprintstrace.a
+        gcc -o main strace-main.o libprintstrace.a -lrt
+
+strace-main.o: main.c
+        gcc -DHAVE_CONFIG_H -D_GNU_SOURCE -I. -I./linux/ -I./linux/i386 -c -o strace-main.o main.c
+
+strace-strace.o: strace.c
+        gcc -DHAVE_CONFIG_H -I./ -I./linux -I./linux/i386 -c -o strace-strace.o strace.c
+
+libstrace: $(NEW_OBJS)
+        ar rcs $(BUILD_DIR)/libstrace.a $(NEW_OBJS)
+
+clean:
+        - rm $(BUILD_DIR)/*.o
+        - rm $(BUILD_DIR)/*.a
